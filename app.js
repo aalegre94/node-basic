@@ -1,7 +1,8 @@
-const http = require("http");
-const fs = require("fs");
+const http = require("http"); //para trabajar con http
+const fs = require("fs"); //para trabajar con archivos
 
 const server = http.createServer((req, res) => {
+  //req - requests and res - responses
   const url = req.url;
   const method = req.method;
 
@@ -20,20 +21,22 @@ const server = http.createServer((req, res) => {
 
   if (url === "/message" && method === "POST") {
     const body = [];
+    //recibo los flujos de datos para el buffer
     req.on("data", (chunk) => {
       console.log(chunk);
       body.push(chunk);
     });
-    req.on("end", () => {
+    //con el buffer tranformo y escribo en el archivo
+    return req.on("end", () => {
       const parsedBody = Buffer.concat(body).toString();
       const message = parsedBody.split("=")[1];
       console.log(parsedBody);
-      fs.writeFileSync("message.txt", message);
+      fs.writeFileSync("message.txt", message, (err) => {
+        res.statusCode = 302;
+        res.setHeader("Location", "/");
+        return res.end();
+      });
     });
-
-    res.statusCode = 302;
-    res.setHeader("Location", "/");
-    return res.end();
   }
 
   res.setHeader("Content-Type", "text/html");
